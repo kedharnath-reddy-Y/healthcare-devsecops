@@ -7,7 +7,7 @@ pipeline {
     }
     stage('SAST') {
       steps {
-        sh '''docker run --rm --network host -u "$(id -u):$(id -g)" -e SONAR_TOKEN -e SONAR_HOST_URL=http://localhost:9000 -v "$PWD":/usr/src sonarsource/sonar-scanner-cli -Dsonar.qualitygate.wait=true'''
+        sh '''docker run --rm --network host -u "$(id -u):$(id -g)" -e SONAR_TOKEN -e SONAR_USER_HOME=/tmp/.sonar -e SONAR_HOST_URL=http://localhost:9000 -v "$PWD":/usr/src sonarsource/sonar-scanner-cli -Dsonar.qualitygate.wait=true'''
       }
     }
     stage('Security Scan') {
