@@ -13,7 +13,23 @@ if (!ADMIN_USER || !ADMIN_PASSWORD) {
 
 const app = express();
 app.disable('x-powered-by');
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: false,
+    directives: {
+      defaultSrc: ["'none'"],
+      baseUri: ["'none'"],
+      formAction: ["'none'"],
+      frameAncestors: ["'none'"]
+    }
+  }
+}));
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  res.set('Pragma', 'no-cache');
+  res.set('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
+  next();
+});
 app.use(express.json({ limit: '10kb' }));
 
 client.collectDefaultMetrics();
@@ -80,6 +96,8 @@ app.get('/metrics', async (req, res) => {
   res.set('Content-Type', client.register.contentType);
   res.send(await client.register.metrics());
 });
+
+app.use((req, res) => res.status(404).json({ error: 'not found' }));
 
 app.use((err, req, res, next) => {
   res.status(400).json({ error: 'bad request' });
