@@ -1,39 +1,32 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: healthcare-security-alerts
-  namespace: monitoring
+  name: healthcare-alerts
+  namespace: healthcare
   labels:
     release: monitoring
 spec:
   groups:
-  - name: healthcare-security
+  - name: healthcare.rules
     rules:
-    - alert: FailedLoginsHigh
-      expr: sum(increase(failed_logins_total[5m])) > 3
-      for: 30s
-      labels:
-        severity: warning
-      annotations:
-        summary: "Possible brute-force: {{ $value | printf \"%.0f\" }} failed logins in 5m"
-    - alert: UnauthorizedAccessAttempts
-      expr: sum(increase(unauthorized_requests_total[5m])) > 3
-      for: 30s
-      labels:
-        severity: critical
-      annotations:
-        summary: "{{ $value | printf \"%.0f\" }} unauthorized API requests in 5m"
-    - alert: HighCPUUsage
-      expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
-      for: 2m
-      labels:
-        severity: warning
-      annotations:
-        summary: "CPU above 80% on {{ $labels.instance }}"
-    - alert: HealthcareAppDown
-      expr: absent(up{job="healthcare-app"} == 1)
+    - alert: HealthcareHighCPU
+      expr: sum(rate(container_cpu_usage_seconds_total{namespace="healthcare",container="app"}[2m])) > 0.5
       for: 1m
       labels:
+        severity: warning
+      annotations:
+        summary: "High CPU usage in healthcare app"
+    - alert: HealthcareFailedLogins
+      expr: sum(increase(failed_logins_total{namespace="healthcare"}[5m])) > 5
+      for: 0m
+      labels:
         severity: critical
       annotations:
-        summary: "No healthy healthcare-app target"
+        summary: "More than 5 failed logins in 5 minutes"
+    - alert: HealthcareUnauthorizedAccess
+      expr: sum(increase(unauthorized_requests_total{namespace="healthcare"}[5m])) > 5
+      for: 0m
+      labels:
+        severity: critical
+      annotations:
+        summary: "More than 5 unauthorized requests in 5 minutes"
