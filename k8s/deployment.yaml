@@ -24,7 +24,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: app
-        image: healthcare-app:latest
+        image: healthcare-app:1.0.0
         imagePullPolicy: Never
         ports:
         - containerPort: 3000
@@ -40,9 +40,11 @@ spec:
           requests:
             cpu: 50m
             memory: 64Mi
+            ephemeral-storage: 64Mi
           limits:
             cpu: 200m
             memory: 128Mi
+            ephemeral-storage: 256Mi
         readinessProbe:
           httpGet:
             path: /health

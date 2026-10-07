@@ -1,5 +1,5 @@
 'use strict';
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 const express = require('express');
 const helmet = require('helmet');
 const client = require('prom-client');
